@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.senior.dao.SysLogDao">
+    <resultMap type="com.senior.domain.model.SysLogDo" id="SysLogMap">
+        <result property="id" column="id"/>
+        <result property="passport" column="passport"/>
+        <result property="url" column="url"/>
+        <result property="method" column="method"/>
+        <result property="params" column="params"/>
+        <result property="ip" column="ip"/>
+        <result property="cost" column="cost"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="Base_Column">
+        id
+        , passport, url, method, params, ip, cost, create_time    </sql>
+
+    <sql id="Conditions">
+        <where>
+            <if test="ids != null and ids.size > 0">
+                AND Id IN
+                <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="id != null ">
+                and id = #{id}
+            </if>
+            <if test="passport != null and passport != '' ">
+                and passport = #{passport}
+            </if>
+            <if test="url != null and url != '' ">
+                and url = #{url}
+            </if>
+            <if test="method != null and method != '' ">
+                and method like CONCAT('%','${method}', '%')
+            </if>
+            <if test="params != null and params != '' ">
+                and params = #{params}
+            </if>
+            <if test="ip != null and ip != '' ">
+                and ip = #{ip}
+            </if>
+            <if test="cost != null ">
+                and cost = #{cost}
+            </if>
+            <if test="createTime != null ">
+                and create_time = #{createTime}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="PageConditions">
+        <if test="pageSize != null">
+            limit #{pageSize}
+        </if>
+        <if test="offset != null">
+            offset #{offset}
+        </if>
+    </sql>
+
+    <!--插入一条数据-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into sys_log(passport, url, method, params, ip, cost, create_time)
+        values (#{passport}, #{url}, #{method}, #{params}, #{ip}, #{cost}, #{createTime})
+    </insert>
+
+    <insert id="batchInsert">
+        insert into sys_log(passport, url, method, params, ip, cost, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.passport}, #{item.url}, #{item.method}, #{item.params}, #{item.ip}, #{item.cost},
+            #{item.createTime})
+        </foreach>
+    </insert>
+
+    <!--根据主键id删除-->
+    <delete id="deleteById">
+        delete
+        from sys_log
+        where id = #{id}
+    </delete>
+
+    <!--根据主键id更新一条数据-->
+    <update id="updateById">
+        update sys_log
+        <set>
+            <if test="passport != null and passport != ''">
+                passport = #{passport},
+            </if>
+            <if test="url != null and url != ''">
+                url = #{url},
+            </if>
+            <if test="method != null and method != ''">
+                method = #{method},
+            </if>
+            <if test="params != null and params != ''">
+                params = #{params},
+            </if>
+            <if test="ip != null and ip != ''">
+                ip = #{ip},
+            </if>
+            <if test="cost != null">
+                cost = #{cost},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--根据id查询单条数据-->
+    <select id="getById" resultMap="SysLogMap">
+        select
+        <include refid="Base_Column"/>
+        from sys_log
+        where id = #{id}
+    </select>
+
+    <!--根据id列表查询数据-->
+    <select id="getByIds" resultMap="SysLogMap">
+        select
+        <include refid="Base_Column"/>
+        from sys_log
+        where id IN (
+        <foreach item="item" index="index" collection="ids" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <!--根据条件查询数据列表-->
+    <select id="queryList" resultMap="SysLogMap">
+        select
+        <include refid="Base_Column"/>
+        from sys_log
+        <include refid="Conditions"/>
+        order by create_time desc
+        <include refid="PageConditions"/>
+    </select>
+
+    <!--根据条件查询数据条数-->
+    <select id="queryCount" resultType="Long">
+        select
+        count(*)
+        from sys_log
+        <include refid="Conditions"/>
+    </select>
+</mapper>

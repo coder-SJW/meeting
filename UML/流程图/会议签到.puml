@@ -1,0 +1,23 @@
+@startuml
+skinparam wrapWidth 100
+|用户|
+start
+if(登录) then(Y)
+    :进入我的会议;
+    :点击会议日程;
+    :扫码;
+    :输入账号密码;
+    :点击确定;
+    |#AntiqueWhite|服务器|
+        if(token验证) then(Y)
+            :通过;
+            :签到成功;
+        else(N)
+            :签到失败;
+        endif
+        stop
+|用户|
+else(N)
+    :登录失败;
+    stop
+@enduml

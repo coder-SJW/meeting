@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.senior.dao.ImageDao">
+    <resultMap type="com.senior.domain.bo.response.ImageQueryBoResponse" id="ImageMap">
+        <result property="id" column="id"/>
+        <result property="data" column="data"/>
+        <result property="name" column="name"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="Base_Column">
+        Image
+        .
+        id
+        , Image.data, Image.name, Image.create_time, Image.update_time    </sql>
+
+    <sql id="Conditions">
+        <where>
+            <if test="ids != null and ids.size > 0">
+                AND Image.Id IN
+                <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="id != null ">
+                and Image.id = #{id}
+            </if>
+            <if test="data != null and data != '' ">
+                and Image.data = #{data}
+            </if>
+            <if test="name != null and name != '' ">
+                and Image.name like CONCAT('%','${name}', '%')
+            </if>
+            <if test="createTime != null ">
+                and Image.create_time = #{createTime}
+            </if>
+            <if test="startCreateTime != null and startCreateTime > 0">
+                and Image.create_time >= #{startCreateTime}
+            </if>
+            <if test="endCreateTime != null and endCreateTime > 0">
+                <![CDATA[ and Image.create_time < #{endCreateTime} ]]>
+            </if>
+            <if test="updateTime != null ">
+                and Image.update_time = #{updateTime}
+            </if>
+            <if test="startUpdateTime != null and startUpdateTime > 0">
+                and Image.update_time >= #{startUpdateTime}
+            </if>
+            <if test="endUpdateTime != null and endUpdateTime > 0">
+                <![CDATA[ and Image.update_time < #{endUpdateTime} ]]>
+            </if>
+        </where>
+    </sql>
+
+    <sql id="PageConditions">
+        <if test="pageSize != null">
+            limit #{pageSize}
+        </if>
+        <if test="offset != null">
+            offset #{offset}
+        </if>
+    </sql>
+
+    <!--插入一条数据-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into image(data, name, create_time, update_time)
+        values (#{data}, #{name}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--根据主键id删除-->
+    <delete id="deleteById">
+        delete
+        from image
+        where id = #{id}
+    </delete>
+
+    <!--根据主键id更新一条数据-->
+    <update id="updateById">
+        update image
+        <set>
+            <if test="data != null and data != ''">
+                data = #{data},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--根据id查询单条数据-->
+    <select id="getById" resultMap="ImageMap">
+        select
+        <include refid="Base_Column"/>
+        from image Image
+        where id = #{id}
+    </select>
+
+    <!--根据id列表查询数据-->
+    <select id="getByIds" resultMap="ImageMap">
+        select
+        <include refid="Base_Column"/>
+        from image Image
+        where id IN (
+        <foreach item="item" index="index" collection="ids" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <!--根据条件查询数据列表-->
+    <select id="queryList" resultMap="ImageMap">
+        select
+        <include refid="Base_Column"/>
+        from image Image
+        <include refid="Conditions"/>
+        <include refid="PageConditions"/>
+    </select>
+
+    <!--根据条件查询数据并按日期聚合-->
+    <select id="groupBy" resultMap="ImageMap">
+        select count(*) count
+        <if test="groupType != null">
+            <choose>
+                <when test="groupType == @com.senior.common.enums.GroupType@MONTH">
+                    ,FROM_UNIXTIME(Image.create_time / 1000, '%Y-%m') AS date
+                </when>
+                <when test="groupType == @com.senior.common.enums.GroupType@DAY">
+                    ,FROM_UNIXTIME(Image.create_time / 1000, '%Y-%m-%d') AS date
+                </when>
+                <when test="groupType == @com.senior.common.enums.GroupType@HOURS">
+                    ,FROM_UNIXTIME(Image.create_time / 1000, '%H') AS date
+                </when>
+                <otherwise>
+                    ,FROM_UNIXTIME(Image.create_time / 1000, '%Y-%m-%d') AS date
+                </otherwise>
+            </choose>
+            <if test="groupFields != null and groupFields.size > 0">
+                <foreach collection="groupFields" item="item" index="index" open="," separator="," close=" ">
+                    ${item}
+                </foreach>
+            </if>
+        </if>
+        from image Image
+        <include refid="Conditions"/>
+        group by date
+        <if test="groupFields != null and groupFields.size > 0">
+            <foreach collection="groupFields" item="item" index="index" open="," separator=","
+                     close=" ">
+                ${item}
+            </foreach>
+        </if>
+    </select>
+
+    <!--根据条件查询数据条数-->
+    <select id="queryCount" resultType="Long">
+        select
+        count(*)
+        from image Image
+        <include refid="Conditions"/>
+    </select>
+
+</mapper>

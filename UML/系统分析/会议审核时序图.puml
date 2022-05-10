@@ -1,0 +1,15 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+actor       管理员       as user
+participant 会议管理界面 as meets
+
+participant    服务器    as serve
+user -> meets : 查看会议信息
+meets -> meets : 点击某会议审核按钮
+meets -> meets : 选择审核结果
+meets -> serve : 请求变更会议状态
+serve -> serve : 修改会议状态
+serve -> serve : 发布会议审核通知
+serve --> meets : 返回结果
+meets --> user : 返回结果
+@enduml

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.senior.dao.AccountDao">
+    <resultMap type="com.senior.domain.model.AccountDo" id="AccountMap">
+        <result property="id" column="id"/>
+        <result property="passport" column="passport"/>
+        <result property="name" column="name"/>
+        <result property="password" column="password"/>
+        <result property="status" column="status"/>
+        <result property="roleId" column="role_id"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="address" column="address"/>
+        <result property="sex" column="sex"/>
+        <result property="description" column="description"/>
+        <result property="lastLoginTime" column="last_login_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="departmentId" column="department_id"/>
+    </resultMap>
+
+    <sql id="Base_Column">
+        id
+        , passport, name, password, status, role_id, email, phone, address, sex, description, last_login_time, create_time, update_time,department_id    </sql>
+
+    <sql id="Conditions">
+        <where>
+            <if test="ids != null and ids.size > 0">
+                AND Id IN
+                <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="id != null ">
+                and id = #{id}
+            </if>
+            <if test="passport != null and passport != '' ">
+                and passport = #{passport}
+            </if>
+            <if test="name != null and name != '' ">
+                and name = #{name}
+            </if>
+            <if test="password != null and password != '' ">
+                and password = #{password}
+            </if>
+            <if test="status != null  and status > -1">
+                and status = #{status}
+            </if>
+            <if test="roleId != null ">
+                and role_id = #{roleId}
+            </if>
+            <if test="email != null and email != '' ">
+                and email = #{email}
+            </if>
+            <if test="phone != null and phone != '' ">
+                and phone = #{phone}
+            </if>
+            <if test="address != null and address != '' ">
+                and address = #{address}
+            </if>
+            <if test="sex != null  and sex > -1">
+                and sex = #{sex}
+            </if>
+            <if test="description != null and description != '' ">
+                and description = #{description}
+            </if>
+            <if test="createTime != null ">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null ">
+                and update_time = #{updateTime}
+            </if>
+            <if test="startLastLoginTime != null and startLastLoginTime > 0">
+                and last_login_time >= #{startLastLoginTime}
+            </if>
+            <if test="endLastLoginTime != null and endLastLoginTime > 0">
+                <![CDATA[ and last_login_time < #{endLastLoginTime} ]]>
+            </if>
+            <if test="startCreateTime != null and startCreateTime > 0">
+                and create_time >= #{startCreateTime}
+            </if>
+            <if test="endCreateTime != null and endCreateTime > 0">
+                <![CDATA[ and create_time < #{endCreateTime} ]]>
+            </if>
+            <if test="departmentId != null and departmentId > 0">
+                and department_id = #{departmentId}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="PageConditions">
+        <if test="pageSize != null">
+            limit #{pageSize}
+        </if>
+        <if test="offset != null">
+            offset #{offset}
+        </if>
+    </sql>
+
+    <!--插入一条数据-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into account(passport, name, password, status, role_id, email, phone, address, sex, description,
+                            create_time, update_time,
+                            department_id) values (#{passport}, #{name}, #{password}, #{status}, #{roleId}, #{email}, #{phone}, #{address}, #{sex},
+                                #{description}, #{createTime}, #{updateTime}, #{departmentId})
+    </insert>
+
+    <!--根据主键id删除-->
+    <delete id="deleteById">
+        delete
+        from account
+        where id = #{id}
+    </delete>
+
+    <!--根据主键id更新一条数据-->
+    <update id="updateById">
+        update account
+        <set>
+            <if test="passport != null and passport != ''">
+                passport = #{passport},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="password != null and password != ''">
+                password = #{password},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="roleId != null">
+                role_id = #{roleId},
+            </if>
+            <if test="email != null and email != ''">
+                email = #{email},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="address != null and address != ''">
+                address = #{address},
+            </if>
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+            <if test="lastLoginTime != null">
+                last_login_time = #{lastLoginTime},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="departmentId != null">
+                department_id = #{departmentId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--根据passport查询单条数据-->
+    <select id="getByPassport" resultMap="AccountMap">
+        select
+        <include refid="Base_Column"/>
+        from account
+        where passport = #{passport}
+    </select>
+
+    <!--根据id查询单条数据-->
+    <select id="getById" resultMap="AccountMap">
+        select
+        <include refid="Base_Column"/>
+        from account
+        where id = #{id}
+    </select>
+
+    <!--根据id列表查询数据-->
+    <select id="getByIds" resultMap="AccountMap">
+        select
+        <include refid="Base_Column"/>
+        from account
+        where id IN (
+        <foreach item="item" index="index" collection="ids" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <!--根据条件查询数据列表-->
+    <select id="queryList" resultMap="AccountMap">
+        select
+        <include refid="Base_Column"/>
+        from account
+        <include refid="Conditions"/>
+        <include refid="PageConditions"/>
+    </select>
+
+    <!--根据条件查询数据条数-->
+    <select id="queryCount" resultType="Long">
+        select
+        count(*)
+        from account
+        <include refid="Conditions"/>
+    </select>
+
+    <update id="changePassword">
+        update account
+        set password    = #{password},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,8 @@
+@startwbs
+'https://plantuml.com/wbs-diagram
+
+* 业务角色
+** 行政管理员
+** 公司员工
+
+@endwbs

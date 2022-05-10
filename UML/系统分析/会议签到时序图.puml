@@ -1,0 +1,18 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+actor       用户       as user
+participant 会议展示界面 as meets
+participant   手机  as phone
+participant    服务器    as serve
+user -> meets : 查看会议信息
+meets -> meets : 点击签到
+meets -> serve : 请求签到二维码
+serve --> meets : 返回签到二维码
+phone -> meets : 使用手机扫描签到二维码
+meets -> phone : 扫描到二维码的内容
+phone -> phone : 填写账号密码
+phone -> serve : 将内容发送给服务器
+serve -> serve : 验证是否有效
+serve --> meets : 通知pc端签到结果
+meets --> user : 返回
+@enduml

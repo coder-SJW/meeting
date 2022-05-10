@@ -1,0 +1,22 @@
+@startuml
+skinparam wrapWidth 100
+|用户|
+start
+if(登录) then(Y)
+    :进入会议管理模块;
+    :点击创建按钮;
+    :填写会议信息;
+    :点击保存;
+    |#AntiqueWhite|管理员|
+        if(会议审核) then(Y)
+            :通过;
+            :发布会议通知;
+        else(N)
+            :驳回;
+        endif
+        stop
+|用户|
+else(N)
+    :登录失败;
+    stop
+@enduml

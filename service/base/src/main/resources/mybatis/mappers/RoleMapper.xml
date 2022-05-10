@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.senior.dao.RoleDao">
+    <resultMap type="com.senior.domain.model.RoleDo" id="RoleMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="authorities" column="authorities"
+                typeHandler="com.senior.dao.typehandler.DelimitedStringTypeHandler"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="type" column="type"/>
+    </resultMap>
+
+    <sql id="Base_Column">
+        id
+        , name, description, authorities, create_time, update_time, type
+    </sql>
+
+    <sql id="Conditions">
+        <where>
+            <if test="ids != null and ids.size > 0">
+                AND Id IN
+                <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="id != null ">
+                and id = #{id}
+            </if>
+            <if test="name != null and name != '' ">
+                and name = #{name}
+            </if>
+            <if test="description != null and description != '' ">
+                and description = #{description}
+            </if>
+            <if test="authorities != null and authorities.size > 0 ">
+                and
+                <foreach collection="authorities" item="item" index="index" open="(" separator="or" close=")">
+                    FIND_IN_SET(#{item}, authorities)
+                </foreach>
+            </if>
+            <if test="createTime != null ">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null ">
+                and update_time = #{updateTime}
+            </if>
+            <if test="type != null and type > 0">
+                and type = #{type}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="PageConditions">
+        <if test="pageSize != null">
+            limit #{pageSize}
+        </if>
+        <if test="offset != null">
+            offset #{offset}
+        </if>
+    </sql>
+
+    <!--插入一条数据-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into role(name, description, authorities, create_time, update_time, type)
+        values (#{name}, #{description},
+                #{authorities, typeHandler=com.senior.dao.typehandler.DelimitedStringTypeHandler},
+                #{createTime}, #{updateTime}, #{type})
+    </insert>
+
+    <!--根据主键id删除-->
+    <delete id="deleteById">
+        delete
+        from role
+        where id = #{id}
+    </delete>
+
+    <!--根据主键id更新一条数据-->
+    <update id="updateById">
+        update role
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+            <if test="authorities != null and authorities.size > 0">
+                authorities = #{authorities, typeHandler=com.senior.dao.typehandler.DelimitedStringTypeHandler},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--根据id查询单条数据-->
+    <select id="getById" resultMap="RoleMap">
+        select
+        <include refid="Base_Column"/>
+        from role
+        where id = #{id}
+    </select>
+
+    <!--根据id列表查询数据-->
+    <select id="getByIds" resultMap="RoleMap">
+        select
+        <include refid="Base_Column"/>
+        from role
+        where id IN (
+        <foreach item="item" index="index" collection="ids" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <!--根据条件查询数据列表-->
+    <select id="queryList" resultMap="RoleMap">
+        select
+        <include refid="Base_Column"/>
+        from role
+        <include refid="Conditions"/>
+        <include refid="PageConditions"/>
+    </select>
+
+    <!--根据条件查询数据条数-->
+    <select id="queryCount" resultType="Long">
+        select
+        count(*)
+        from role
+        <include refid="Conditions"/>
+    </select>
+</mapper>

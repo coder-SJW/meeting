@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.senior.dao.ReserveDao">
+    <resultMap type="com.senior.domain.bo.response.ReserveQueryBoResponse" id="ReserveMap">
+        <result property="id" column="id"/>
+        <result property="roomId" column="room_id"/>
+        <result property="content" column="content"/>
+        <result property="accountId" column="account_id"/>
+        <result property="reserveStartTime" column="reserve_start_time"/>
+        <result property="reserveEndTime" column="reserve_end_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="meetingId" column="meeting_id"/>
+        <result property="roomName" column="roomName"/>
+    </resultMap>
+
+    <sql id="Base_Column">
+        Reserve
+        .
+        id
+        , Reserve.room_id, Reserve.content, Reserve.account_id, Reserve.reserve_start_time, Reserve.reserve_end_time, Reserve.create_time, Reserve.update_time,Reserve.meeting_id    </sql>
+
+    <sql id="Conditions">
+        <where>
+            <if test="ids != null and ids.size > 0">
+                AND Reserve.Id IN
+                <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="id != null ">
+                and Reserve.id = #{id}
+            </if>
+            <if test="roomId != null ">
+                and Reserve.room_id = #{roomId}
+            </if>
+            <if test="content != null and content != '' ">
+                and Reserve.content = #{content}
+            </if>
+            <if test="accountId != null ">
+                and Reserve.account_id = #{accountId}
+            </if>
+            <if test="reserveStartTime != null ">
+                and Reserve.reserve_start_time = #{reserveStartTime}
+            </if>
+            <if test="startReserveStartTime != null and startReserveStartTime > 0">
+                and Reserve.reserve_start_time >= #{startReserveStartTime}
+            </if>
+            <if test="endReserveStartTime != null and endReserveStartTime > 0">
+                <![CDATA[ and Reserve.reserve_start_time < #{endReserveStartTime} ]]>
+            </if>
+            <if test="reserveEndTime != null ">
+                and Reserve.reserve_end_time = #{reserveEndTime}
+            </if>
+            <if test="startReserveEndTime != null and startReserveEndTime > 0">
+                and Reserve.reserve_end_time >= #{startReserveEndTime}
+            </if>
+            <if test="endReserveEndTime != null and endReserveEndTime > 0">
+                <![CDATA[ and Reserve.reserve_end_time < #{endReserveEndTime} ]]>
+            </if>
+            <if test="createTime != null ">
+                and Reserve.create_time = #{createTime}
+            </if>
+            <if test="startCreateTime != null and startCreateTime > 0">
+                and Reserve.create_time >= #{startCreateTime}
+            </if>
+            <if test="endCreateTime != null and endCreateTime > 0">
+                <![CDATA[ and Reserve.create_time < #{endCreateTime} ]]>
+            </if>
+            <if test="updateTime != null ">
+                and Reserve.update_time = #{updateTime}
+            </if>
+            <if test="startUpdateTime != null and startUpdateTime > 0">
+                and Reserve.update_time >= #{startUpdateTime}
+            </if>
+            <if test="endUpdateTime != null and endUpdateTime > 0">
+                <![CDATA[ and Reserve.update_time < #{endUpdateTime} ]]>
+            </if>
+            <if test="accountId != null and accountId > -1 ">
+                and Account.id = #{accountId}
+            </if>
+            <if test="accountPassport != null and accountPassport != '' ">
+                and Account.passport = #{accountPassport}
+            </if>
+            <if test="roomId != null and roomId > -1 ">
+                and Room.id = #{roomId}
+            </if>
+            <if test="roomName != null and roomName != '' ">
+                and Room.name like CONCAT('%','${roomName}', '%')
+            </if>
+            <if test="meetingId != null and meetingId > -1">
+                and Reserve.meeting_id = #{meetingId}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="PageConditions">
+        <if test="pageSize != null">
+            limit #{pageSize}
+        </if>
+        <if test="offset != null">
+            offset #{offset}
+        </if>
+    </sql>
+
+    <!--插入一条数据-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into reserve(room_id, content, account_id, reserve_start_time, reserve_end_time, create_time,
+                            update_time, meeting_id)
+        values ( #{roomId}
+               , #{content}
+               , #{accountId}
+               , #{reserveStartTime}
+               , #{reserveEndTime}
+               , #{createTime}
+               , #{updateTime}
+               , #{meetingId})
+    </insert>
+
+    <!--根据主键id删除-->
+    <delete id="deleteById">
+        delete
+        from reserve
+        where id = #{id}
+    </delete>
+
+    <!--根据主键id更新一条数据-->
+    <update id="updateById">
+        update reserve
+        <set>
+            <if test="roomId != null">
+                room_id = #{roomId},
+            </if>
+            <if test="content != null and content != ''">
+                content = #{content},
+            </if>
+            <if test="accountId != null">
+                account_id = #{accountId},
+            </if>
+            <if test="reserveStartTime != null">
+                reserve_start_time = #{reserveStartTime},
+            </if>
+            <if test="reserveEndTime != null">
+                reserve_end_time = #{reserveEndTime},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="meetingId != null">
+                meeting_Id = #{meetingId}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--根据id查询单条数据-->
+    <select id="getById" resultMap="ReserveMap">
+        select
+        <include refid="Base_Column"/>
+        from reserve Reserve
+        where id = #{id}
+    </select>
+
+    <!--根据会议id查询单条数据-->
+    <select id="getByMeetingId" resultMap="ReserveMap">
+        select
+        <include refid="Base_Column"/>
+        from reserve Reserve
+        where meeting_id = #{id}
+    </select>
+
+    <!--根据id列表查询数据-->
+    <select id="getByIds" resultMap="ReserveMap">
+        select
+        <include refid="Base_Column"/>
+        from reserve Reserve
+        where id IN (
+        <foreach item="item" index="index" collection="ids" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <!--根据条件查询数据列表-->
+    <select id="queryList" resultMap="ReserveMap">
+        select
+        <include refid="Base_Column"/>
+        from reserve Reserve
+        left join account Account on Account.id = Reserve.account_id
+        left join room Room on Room.id = Reserve.room_id
+        <include refid="Conditions"/>
+        order by Reserve.create_time desc
+        <include refid="PageConditions"/>
+    </select>
+
+    <select id="queryMyEvents" resultMap="ReserveMap">
+        select reserve.*,room.name as roomName
+        from reserve
+                 left join meeting m on reserve.meeting_id = m.id
+                left join room on m.room_id = room.id
+        where find_in_set(#{accountId}, m.account_ids);
+    </select>
+
+    <!--根据条件查询数据并按日期聚合-->
+    <select id="groupBy" resultMap="ReserveMap">
+        select count(*) count
+        <if test="groupType != null">
+            <choose>
+                <when test="groupType == @com.senior.common.enums.GroupType@MONTH">
+                    ,FROM_UNIXTIME(Reserve.create_time / 1000, '%Y-%m') AS date
+                </when>
+                <when test="groupType == @com.senior.common.enums.GroupType@DAY">
+                    ,FROM_UNIXTIME(Reserve.create_time / 1000, '%Y-%m-%d') AS date
+                </when>
+                <when test="groupType == @com.senior.common.enums.GroupType@HOURS">
+                    ,FROM_UNIXTIME(Reserve.create_time / 1000, '%H') AS date
+                </when>
+                <otherwise>
+                    ,FROM_UNIXTIME(Reserve.create_time / 1000, '%Y-%m-%d') AS date
+                </otherwise>
+            </choose>
+            <if test="groupFields != null and groupFields.size > 0">
+                <foreach collection="groupFields" item="item" index="index" open="," separator="," close=" ">
+                    ${item}
+                </foreach>
+            </if>
+        </if>
+        from reserve Reserve
+        <include refid="Conditions"/>
+        group by date
+        <if test="groupFields != null and groupFields.size > 0">
+            <foreach collection="groupFields" item="item" index="index" open="," separator=","
+                     close=" ">
+                ${item}
+            </foreach>
+        </if>
+    </select>
+
+    <!--根据条件查询数据条数-->
+    <select id="queryCount" resultType="Long">
+        select
+        count(*)
+        from reserve Reserve
+        left join account Account on Account.id = Reserve.account_id
+        left join room Room on Room.id = Reserve.room_id
+        <include refid="Conditions"/>
+    </select>
+
+</mapper>

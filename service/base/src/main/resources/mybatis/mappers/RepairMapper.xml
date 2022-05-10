@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.senior.dao.RepairDao">
+    <resultMap type="com.senior.domain.bo.response.RepairQueryBoResponse" id="RepairMap">
+        <result property="id" column="id"/>
+        <result property="status" column="status"/>
+        <result property="content" column="content"/>
+        <result property="roomId" column="room_id"/>
+        <result property="accountId" column="account_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="Base_Column">
+        Repair
+        .
+        id
+        , Repair.status, Repair.content, Repair.room_id, Repair.account_id, Repair.create_time, Repair.update_time    </sql>
+
+    <sql id="Conditions">
+        <where>
+            <if test="ids != null and ids.size > 0">
+                AND Repair.Id IN
+                <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="id != null ">
+                and Repair.id = #{id}
+            </if>
+            <if test="status != null  and status > -1">
+                and Repair.status = #{status}
+            </if>
+            <if test="content != null and content != '' ">
+                and Repair.content = #{content}
+            </if>
+            <if test="roomId != null ">
+                and Repair.room_id = #{roomId}
+            </if>
+            <if test="accountId != null ">
+                and Repair.account_id = #{accountId}
+            </if>
+            <if test="createTime != null ">
+                and Repair.create_time = #{createTime}
+            </if>
+            <if test="startCreateTime != null and startCreateTime > 0">
+                and Repair.create_time >= #{startCreateTime}
+            </if>
+            <if test="endCreateTime != null and endCreateTime > 0">
+                <![CDATA[ and Repair.create_time < #{endCreateTime} ]]>
+            </if>
+            <if test="updateTime != null ">
+                and Repair.update_time = #{updateTime}
+            </if>
+            <if test="startUpdateTime != null and startUpdateTime > 0">
+                and Repair.update_time >= #{startUpdateTime}
+            </if>
+            <if test="endUpdateTime != null and endUpdateTime > 0">
+                <![CDATA[ and Repair.update_time < #{endUpdateTime} ]]>
+            </if>
+            <if test="accountId != null and accountId > -1 ">
+                and Account.id = #{accountId}
+            </if>
+            <if test="accountPassport != null and accountPassport != '' ">
+                and Account.passport = #{accountPassport}
+            </if>
+            <if test="roomId != null and roomId > -1 ">
+                and Room.id = #{roomId}
+            </if>
+            <if test="roomName != null and roomName != '' ">
+                and Room.name like CONCAT('%','${roomName}', '%')
+            </if>
+        </where>
+    </sql>
+
+    <sql id="PageConditions">
+        <if test="pageSize != null">
+            limit #{pageSize}
+        </if>
+        <if test="offset != null">
+            offset #{offset}
+        </if>
+    </sql>
+
+    <!--插入一条数据-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into repair(status, content, room_id, account_id, create_time, update_time)
+        values ( #{status}
+               , #{content}
+               , #{roomId}
+               , #{accountId}
+               , #{createTime}
+               , #{updateTime})
+    </insert>
+
+    <!--根据主键id删除-->
+    <delete id="deleteById">
+        delete
+        from repair
+        where id = #{id}
+    </delete>
+
+    <!--根据主键id更新一条数据-->
+    <update id="updateById">
+        update repair
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="content != null and content != ''">
+                content = #{content},
+            </if>
+            <if test="roomId != null">
+                room_id = #{roomId},
+            </if>
+            <if test="accountId != null">
+                account_id = #{accountId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--根据id查询单条数据-->
+    <select id="getById" resultMap="RepairMap">
+        select
+        <include refid="Base_Column"/>
+        from repair Repair
+        where id = #{id}
+    </select>
+
+    <!--根据id列表查询数据-->
+    <select id="getByIds" resultMap="RepairMap">
+        select
+        <include refid="Base_Column"/>
+        from repair Repair
+        where id IN (
+        <foreach item="item" index="index" collection="ids" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <!--根据条件查询数据列表-->
+    <select id="queryList" resultMap="RepairMap">
+        select
+        <include refid="Base_Column"/>
+        from repair Repair
+        left join account Account on Account.id = Repair.account_id
+        left join room Room on Room.id = Repair.room_id
+        <include refid="Conditions"/>
+        order by Repair.create_time desc
+        <include refid="PageConditions"/>
+    </select>
+
+    <!--根据条件查询数据并按日期聚合-->
+    <select id="groupBy" resultMap="RepairMap">
+        select count(*) count
+        <if test="groupType != null">
+            <choose>
+                <when test="groupType == @com.senior.common.enums.GroupType@MONTH">
+                    ,FROM_UNIXTIME(Repair.create_time / 1000, '%Y-%m') AS date
+                </when>
+                <when test="groupType == @com.senior.common.enums.GroupType@DAY">
+                    ,FROM_UNIXTIME(Repair.create_time / 1000, '%Y-%m-%d') AS date
+                </when>
+                <when test="groupType == @com.senior.common.enums.GroupType@HOURS">
+                    ,FROM_UNIXTIME(Repair.create_time / 1000, '%H') AS date
+                </when>
+                <otherwise>
+                    ,FROM_UNIXTIME(Repair.create_time / 1000, '%Y-%m-%d') AS date
+                </otherwise>
+            </choose>
+            <if test="groupFields != null and groupFields.size > 0">
+                <foreach collection="groupFields" item="item" index="index" open="," separator="," close=" ">
+                    ${item}
+                </foreach>
+            </if>
+        </if>
+        from repair Repair
+        <include refid="Conditions"/>
+        group by date
+        <if test="groupFields != null and groupFields.size > 0">
+            <foreach collection="groupFields" item="item" index="index" open="," separator=","
+                     close=" ">
+                ${item}
+            </foreach>
+        </if>
+    </select>
+
+    <!--根据条件查询数据条数-->
+    <select id="queryCount" resultType="Long">
+        select
+        count(*)
+        from repair Repair
+        left join account Account on Account.id = Repair.account_id
+        left join room Room on Room.id = Repair.room_id
+        <include refid="Conditions"/>
+    </select>
+
+</mapper>

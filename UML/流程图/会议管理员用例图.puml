@@ -1,0 +1,14 @@
+@startuml
+left to right direction
+actor "会议管理员" as fc
+rectangle 会议预约系统 {
+  usecase "会议室管理" as UC1
+  usecase "纪要管理" as UC5
+  usecase "会议资源管理" as UC6
+  usecase "消息管理" as UC7
+}
+fc --> UC1
+fc --> UC5
+fc --> UC6
+fc --> UC7
+@enduml

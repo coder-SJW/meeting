@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.senior.dao.DepartmentDao">
+    <resultMap type="com.senior.domain.bo.response.DepartmentQueryBoResponse" id="DepartmentMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="Base_Column">
+        Department
+        .
+        id
+        , Department.name, Department.description, Department.create_time, Department.update_time    </sql>
+
+    <sql id="Conditions">
+        <where>
+            <if test="ids != null and ids.size > 0">
+                AND Department.Id IN
+                <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="id != null ">
+                and Department.id = #{id}
+            </if>
+            <if test="name != null and name != '' ">
+                and Department.name like CONCAT('%','${name}', '%')
+            </if>
+            <if test="description != null and description != '' ">
+                and Department.description = #{description}
+            </if>
+            <if test="createTime != null ">
+                and Department.create_time = #{createTime}
+            </if>
+            <if test="startCreateTime != null and startCreateTime > 0">
+                and Department.create_time >= #{startCreateTime}
+            </if>
+            <if test="endCreateTime != null and endCreateTime > 0">
+                <![CDATA[ and Department.create_time < #{endCreateTime} ]]>
+            </if>
+            <if test="updateTime != null ">
+                and Department.update_time = #{updateTime}
+            </if>
+            <if test="startUpdateTime != null and startUpdateTime > 0">
+                and Department.update_time >= #{startUpdateTime}
+            </if>
+            <if test="endUpdateTime != null and endUpdateTime > 0">
+                <![CDATA[ and Department.update_time < #{endUpdateTime} ]]>
+            </if>
+        </where>
+    </sql>
+
+    <sql id="PageConditions">
+        <if test="pageSize != null">
+            limit #{pageSize}
+        </if>
+        <if test="offset != null">
+            offset #{offset}
+        </if>
+    </sql>
+
+    <!--插入一条数据-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into department(name, description, create_time, update_time)
+        values ( #{name}
+               , #{description}
+               , #{createTime}
+               , #{updateTime})
+    </insert>
+
+    <!--根据主键id删除-->
+    <delete id="deleteById">
+        delete
+        from department
+        where id = #{id}
+    </delete>
+
+    <!--根据主键id更新一条数据-->
+    <update id="updateById">
+        update department
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--根据id查询单条数据-->
+    <select id="getById" resultMap="DepartmentMap">
+        select
+        <include refid="Base_Column"/>
+        from department Department
+        where id = #{id}
+    </select>
+
+    <!--根据id列表查询数据-->
+    <select id="getByIds" resultMap="DepartmentMap">
+        select
+        <include refid="Base_Column"/>
+        from department Department
+        where id IN (
+        <foreach item="item" index="index" collection="ids" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <!--根据条件查询数据列表-->
+    <select id="queryList" resultMap="DepartmentMap">
+        select
+        <include refid="Base_Column"/>
+        from department Department
+        <include refid="Conditions"/>
+        order by Department.create_time desc
+        <include refid="PageConditions"/>
+    </select>
+
+    <!--根据条件查询数据并按日期聚合-->
+    <select id="groupBy" resultMap="DepartmentMap">
+        select count(*) count
+        <if test="groupType != null">
+            <choose>
+                <when test="groupType == @com.senior.common.enums.GroupType@MONTH">
+                    ,FROM_UNIXTIME(Department.create_time / 1000, '%Y-%m') AS date
+                </when>
+                <when test="groupType == @com.senior.common.enums.GroupType@DAY">
+                    ,FROM_UNIXTIME(Department.create_time / 1000, '%Y-%m-%d') AS date
+                </when>
+                <when test="groupType == @com.senior.common.enums.GroupType@HOURS">
+                    ,FROM_UNIXTIME(Department.create_time / 1000, '%H') AS date
+                </when>
+                <otherwise>
+                    ,FROM_UNIXTIME(Department.create_time / 1000, '%Y-%m-%d') AS date
+                </otherwise>
+            </choose>
+            <if test="groupFields != null and groupFields.size > 0">
+                <foreach collection="groupFields" item="item" index="index" open="," separator="," close=" ">
+                    ${item}
+                </foreach>
+            </if>
+        </if>
+        from department Department
+        <include refid="Conditions"/>
+        group by date
+        <if test="groupFields != null and groupFields.size > 0">
+            <foreach collection="groupFields" item="item" index="index" open="," separator=","
+                     close=" ">
+                ${item}
+            </foreach>
+        </if>
+    </select>
+
+    <!--根据条件查询数据条数-->
+    <select id="queryCount" resultType="Long">
+        select
+        count(*)
+        from department Department
+        <include refid="Conditions"/>
+    </select>
+
+</mapper>

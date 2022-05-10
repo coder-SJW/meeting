@@ -1,0 +1,15 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+actor       用户       as user
+participant 会议展示界面 as meets
+database    数据库    as data
+actor       管理员  as manager
+user -> meets : 查看公司会议情况
+meets -> data : 获取会议信息
+meets <- data : 返回会议信息
+meets -> user : 显示查询结果
+user -> manager : 会议预约
+manager -> manager : 审核
+manager -> data : 写入数据库
+manager -> user : 返回审核情况
+@enduml
